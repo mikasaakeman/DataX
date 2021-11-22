@@ -6,6 +6,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.CommonRdbmsReader;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
+import com.mysql.jdbc.Driver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +28,17 @@ public class MysqlReader extends Reader {
             this.originalConfig = super.getPluginJobConf();
 
             Integer userConfigedFetchSize = this.originalConfig.getInt(Constant.FETCH_SIZE);
-            if (userConfigedFetchSize != null) {
-                LOG.warn("对 mysqlreader 不需要配置 fetchSize, mysqlreader 将会忽略这项配置. 如果您不想再看到此警告,请去除fetchSize 配置.");
+//            if (userConfigedFetchSize != null) {
+//                LOG.warn("对 mysqlreader 不需要配置 fetchSize, mysqlreader 将会忽略这项配置. 如果您不想再看到此警告,请去除fetchSize 配置.");
+//            }
+            if("5.0".compareTo(Driver.VERSION) > 0 ) {
+                if (userConfigedFetchSize != null) {
+                    LOG.warn("对mysql版本低于5.0的 mysqlreader 不需要配置 fetchSize, mysqlreader 将会忽略这项配置. 如果您不想再看到此警告,请去除fetchSize 配置.");
+                }
+                this.originalConfig.set(Constant.FETCH_SIZE, Integer.MIN_VALUE);
             }
 
-            this.originalConfig.set(Constant.FETCH_SIZE, Integer.MIN_VALUE);
+//            this.originalConfig.set(Constant.FETCH_SIZE, Integer.MIN_VALUE);
 
             this.commonRdbmsReaderJob = new CommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderJob.init(this.originalConfig);
